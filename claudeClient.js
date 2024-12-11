@@ -8,7 +8,7 @@ export async function callClaude(apiKey, messages, tools = [], systemPrompt) {
   }
 
   const body = {
-    model: 'claude-3-sonnet-20240229',
+    model: 'claude-3-5-sonnet-20241022',
     messages: messages,
     system: systemPrompt.content,
     tools,

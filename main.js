@@ -20,18 +20,33 @@ const toolFunctions = {
   getCurrentTime: () => new Date().toISOString()
 }
 
-async function handleToolCalls(toolCalls) {
-  return toolCalls.map(call => {
-    const func = toolFunctions[call.function.name]
-    if (!func) {
-      throw new Error(`Unknown tool: ${call.function.name}`)
+function handleToolUses(content) {
+  const toolResults = []
+  
+  for (const item of content) {
+    if (item.type === 'tool_use') {
+      const func = toolFunctions[item.name]
+      if (!func) {
+        throw new Error(`Unknown tool: ${item.name}`)
+      }
+      
+      const result = func()
+      toolResults.push({
+        type: 'tool_result',
+        tool_use_id: item.id,
+        content: result
+      })
     }
+  }
+
+  if (toolResults.length > 0) {
     return {
-      role: 'tool',
-      content: JSON.stringify(func()),
-      tool_call_id: call.id
+      role: 'user',
+      content: toolResults
     }
-  })
+  }
+  
+  return null
 }
 
 // Example usage
@@ -45,11 +60,21 @@ async function main() {
     const response = await callClaude(ANTHROPIC_API_KEY, messages, tools, systemPrompt)
     logJson('Claude response', response)
 
-    if (response.tool_calls?.length) {
-      const toolResults = await handleToolCalls(response.tool_calls)
-      logJson('Tool results', toolResults)
+    if (response.stop_reason === 'tool_use') {
+      const toolResponse = handleToolUses(response.content)
+      logJson('Tool response', toolResponse)
       
-      const finalResponse = await callClaude(ANTHROPIC_API_KEY, [...messages, ...toolResults], tools, systemPrompt)
+      const finalResponse = await callClaude(ANTHROPIC_API_KEY, 
+        [...messages, 
+         {
+           role: 'assistant',
+           content: response.content  // Include the complete content array
+         },
+         toolResponse
+        ], 
+        tools, 
+        systemPrompt
+      )
       logJson('Final response', finalResponse)
     }
   } catch (error) {
