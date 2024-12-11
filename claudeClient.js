@@ -9,9 +9,9 @@ export async function callClaude(apiKey, messages, tools = [], systemPrompt) {
 
   const body = {
     model: 'claude-3-5-sonnet-20241022',
-    messages: messages,
     system: systemPrompt.content,
     tools,
+    messages: messages,
     max_tokens: 1024
   }
 
