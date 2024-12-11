@@ -57,8 +57,9 @@ async function main() {
       content: 'What time is it on the server?'
     }]
 
+    logJson('Chat', {system:systemPrompt, messages});
     const response = await callClaude(ANTHROPIC_API_KEY, messages, tools, systemPrompt)
-    logJson('Claude response', response)
+    logJson('Claude response', response.content);
 
     if (response.stop_reason === 'tool_use') {
       const toolResponse = handleToolUses(response.content)
@@ -75,7 +76,7 @@ async function main() {
         tools,
         systemPrompt
       )
-      logJson('Final response', finalResponse)
+      logJson('Final response', finalResponse.content);
     }
   } catch (error) {
     console.error('Error:', error)

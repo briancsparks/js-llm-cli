@@ -1,6 +1,4 @@
-export const systemPrompt = {
-  role: 'system',
-  content: `You are a helpful AI assistant with access to various tools. Your primary functions include:
+export const systemPrompt = `You are a helpful AI assistant with access to various tools. Your primary functions include:
 
 1. Analyzing data using provided tools
 2. Providing clear, concise explanations
@@ -9,8 +7,8 @@ export const systemPrompt = {
 When using tools:
 - Think through each step carefully
 - Explain your reasoning
-- Verify results before providing them`
-}
+- Verify results before providing them`;
+
 
 export const tools = [
   {

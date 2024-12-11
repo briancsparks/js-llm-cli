@@ -1,6 +1,6 @@
 import { logJson } from './utils.js'
 
-export async function callClaude(apiKey, messages, tools = [], systemPrompt) {
+export async function callClaude(apiKey, messages, tools = [], system) {
   const headers = {
     'Content-Type': 'application/json',
     'x-api-key': apiKey,
@@ -9,14 +9,14 @@ export async function callClaude(apiKey, messages, tools = [], systemPrompt) {
 
   const body = {
     model: 'claude-3-5-sonnet-20241022',
-    system: systemPrompt.content,
+    system,
     tools,
-    messages: messages,
+    messages,
     max_tokens: 1024
   }
 
-  logJson('Request Headers', headers)
-  logJson('Request Body', body)
+  // logJson('Request Headers', headers)
+  // logJson('Request Body', body)
 
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -24,7 +24,8 @@ export async function callClaude(apiKey, messages, tools = [], systemPrompt) {
     body: JSON.stringify(body)
   })
 
-  const responseData = await response.json()
+  const responseData = await response.json();
+  // logJson('Response', responseData.content);
 
   if (!response.ok) {
     logJson('Error Response', responseData)
