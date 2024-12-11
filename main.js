@@ -1,7 +1,7 @@
 import { load } from 'https://deno.land/std/dotenv/mod.ts'
-import { systemPrompt, tools } from './prompts/system.js'
-import { callClaude } from './claudeClient.js'
-import { logJson } from './utils.js'
+import { systemPrompt, tools } from './src/prompts/system.js'
+import { callClaude } from './src/claudeClient.js'
+import { logJson } from './src/utils.js'
 
 // Load and merge environment variables
 const envFromFile = await load()
@@ -22,14 +22,14 @@ const toolFunctions = {
 
 function handleToolUses(content) {
   const toolResults = []
-  
+
   for (const item of content) {
     if (item.type === 'tool_use') {
       const func = toolFunctions[item.name]
       if (!func) {
         throw new Error(`Unknown tool: ${item.name}`)
       }
-      
+
       const result = func()
       toolResults.push({
         type: 'tool_result',
@@ -45,7 +45,7 @@ function handleToolUses(content) {
       content: toolResults
     }
   }
-  
+
   return null
 }
 
@@ -63,16 +63,16 @@ async function main() {
     if (response.stop_reason === 'tool_use') {
       const toolResponse = handleToolUses(response.content)
       logJson('Tool response', toolResponse)
-      
-      const finalResponse = await callClaude(ANTHROPIC_API_KEY, 
-        [...messages, 
+
+      const finalResponse = await callClaude(ANTHROPIC_API_KEY,
+        [...messages,
          {
            role: 'assistant',
            content: response.content  // Include the complete content array
          },
          toolResponse
-        ], 
-        tools, 
+        ],
+        tools,
         systemPrompt
       )
       logJson('Final response', finalResponse)
