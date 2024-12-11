@@ -1,36 +1,23 @@
 import { load } from 'https://deno.land/std/dotenv/mod.ts'
 import { systemPrompt, tools } from './prompts/system.js'
+import { callClaude } from './claudeClient.js'
+import { logJson } from './utils.js'
 
-// Load environment variables
-const env = await load()
+// Load and merge environment variables
+const envFromFile = await load()
+const env = {
+  ...envFromFile,
+  ...Deno.env.toObject()  // system env takes precedence
+}
+
 const ANTHROPIC_API_KEY = env['ANTHROPIC_API_KEY']
+if (!ANTHROPIC_API_KEY) {
+  throw new Error('ANTHROPIC_API_KEY is required - set in environment or .env file')
+}
 
 // Tool implementations
 const toolFunctions = {
   getCurrentTime: () => new Date().toISOString()
-}
-
-async function callClaude(messages, tools = []) {
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': ANTHROPIC_API_KEY,
-      'anthropic-version': '2023-06-01'
-    },
-    body: JSON.stringify({
-      model: 'claude-3-sonnet-20240229',
-      messages: [systemPrompt, ...messages],
-      tools,
-      max_tokens: 1024
-    })
-  })
-
-  if (!response.ok) {
-    throw new Error(`API call failed: ${response.status} ${response.statusText}`)
-  }
-
-  return await response.json()
 }
 
 async function handleToolCalls(toolCalls) {
@@ -55,13 +42,15 @@ async function main() {
       content: 'What time is it on the server?'
     }]
 
-    const response = await callClaude(messages, tools)
-    console.log('Claude response:', response)
+    const response = await callClaude(ANTHROPIC_API_KEY, messages, tools, systemPrompt)
+    logJson('Claude response', response)
 
     if (response.tool_calls?.length) {
       const toolResults = await handleToolCalls(response.tool_calls)
-      const finalResponse = await callClaude([...messages, ...toolResults])
-      console.log('Final response:', finalResponse)
+      logJson('Tool results', toolResults)
+      
+      const finalResponse = await callClaude(ANTHROPIC_API_KEY, [...messages, ...toolResults], tools, systemPrompt)
+      logJson('Final response', finalResponse)
     }
   } catch (error) {
     console.error('Error:', error)

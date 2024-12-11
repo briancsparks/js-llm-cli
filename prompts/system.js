@@ -14,15 +14,12 @@ When using tools:
 
 export const tools = [
   {
-    type: 'function',
-    function: {
-      name: 'getCurrentTime',
-      description: 'Get the current server time',
-      parameters: {
-        type: 'object',
-        properties: {},
-        required: []
-      }
+    name: 'getCurrentTime',
+    description: 'Get the current server time',
+    input_schema: {
+      type: 'object',
+      properties: {},
+      required: []
     }
   }
 ]
