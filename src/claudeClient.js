@@ -15,9 +15,6 @@ export async function callClaude(apiKey, messages, tools = [], system) {
     max_tokens: 1024
   }
 
-  // logJson('Request Headers', headers)
-  // logJson('Request Body', body)
-
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers,
@@ -25,7 +22,6 @@ export async function callClaude(apiKey, messages, tools = [], system) {
   })
 
   const responseData = await response.json();
-  // logJson('Response', responseData.content);
 
   if (!response.ok) {
     logJson('Error Response', responseData)
