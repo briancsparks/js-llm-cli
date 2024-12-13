@@ -1,7 +1,6 @@
 
 import { systemPrompt } from './src/prompts/system.js'
 import { callClaude } from './src/claudeClient.js'
-import { logJson } from './src/utils.js'
 import { handleToolUses } from './src/tools/call.js';
 import myTools from './src/tools/index.js';
 import { loadMcpServers, closeClient } from './src/mcp/index.js';

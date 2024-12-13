@@ -1,7 +1,6 @@
 
 import { Client } from 'npm:@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from 'npm:@modelcontextprotocol/sdk/client/stdio.js';
-import {logJson} from "../utils.js";
 import { getLogger } from "../logger.js";
 
 let client = null;    // Must close when done
@@ -34,7 +33,7 @@ export async function loadMcpServers() {
   // Initialize client
   client = new Client(
     {
-      name: 'js-mcp-client',
+      name: 'js-llm',
       version: '1.0.0'
     },
     {
@@ -50,16 +49,14 @@ export async function loadMcpServers() {
 
   const caps = client.getServerCapabilities();
   const version = client.getServerVersion();
-
   logger.info('caps and version:', { caps, version});
-  const toolsResponse = await client.listTools()
 
+  const toolsResponse = await client.listTools()
   logger.info('Raw tools response:', toolsResponse);
 
   let tools = {};
   for (const tool of toolsResponse.tools) {
     const {inputSchema, ...rest} = tool;
-    // tool.input_schema = tool.inputSchema;
     tools[tool.name] = {...rest, input_schema: inputSchema};
   }
   return tools;

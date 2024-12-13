@@ -1,4 +1,3 @@
-import { logJson } from './utils.js'
 import { ANTHROPIC_VERSION, ANTHROPIC_API_KEY, model } from './consts.js';
 import { getLogger } from "./logger.js";
 
