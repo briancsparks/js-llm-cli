@@ -3,13 +3,19 @@ import { systemPrompt } from './src/prompts/system.js'
 import { callClaude } from './src/claudeClient.js'
 import { logJson } from './src/utils.js'
 import { handleToolUses } from './src/tools/call.js';
-import tools from './src/tools/index.js';
+import myTools from './src/tools/index.js';
+import { loadMcpServers, closeClient } from './src/mcp/index.js';
 
 import { ANTHROPIC_API_KEY } from './src/consts.js';
 
 if (!ANTHROPIC_API_KEY) {
   throw new Error('ANTHROPIC_API_KEY is required - set in environment or .env file')
 }
+
+const tools = {
+  ...myTools,
+  ...await loadMcpServers()
+};
 
 // main!
 async function main() {
@@ -43,6 +49,10 @@ async function main() {
   } catch (error) {
     console.error('Error:', error)
   }
+
+  console.log('Done!');
+  await closeClient();
 }
 
 main()
+
