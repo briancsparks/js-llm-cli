@@ -1,16 +1,17 @@
 import { logJson } from './utils.js'
+import { ANTHROPIC_VERSION, ANTHROPIC_API_KEY, model } from './consts.js';
 
-export async function callClaude(apiKey, messages, tools = [], system) {
+export async function callClaude(messages, tools = [], systemPrompt) {
   const headers = {
     'Content-Type': 'application/json',
-    'x-api-key': apiKey,
-    'anthropic-version': '2023-06-01'
+    'x-api-key': ANTHROPIC_API_KEY,
+    'anthropic-version': ANTHROPIC_VERSION
   }
 
   const body = {
-    model: 'claude-3-5-sonnet-20241022',
-    system,
-    tools,
+    model,
+    system: systemPrompt,
+    tools: Object.values(tools),
     messages,
     max_tokens: 1024
   }

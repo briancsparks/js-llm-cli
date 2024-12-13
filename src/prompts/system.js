@@ -10,14 +10,3 @@ When using tools:
 - Verify results before providing them`;
 
 
-export const tools = [
-  {
-    name: 'getCurrentTime',
-    description: 'Get the current server time',
-    input_schema: {
-      type: 'object',
-      properties: {},
-      required: []
-    }
-  }
-]
