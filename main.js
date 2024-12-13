@@ -36,16 +36,14 @@ async function main() {
       bark(message);
     }
 
-    // logger.debug('Chat', {system:systemPrompt, messages, tools});
-    const response = await callClaude(messages, tools, systemPrompt)
-    // logger.debug('Claude response', response.content);
-    logger.debug('Claude response', response);
+    const response = await callClaude(systemPrompt, messages, tools);
 
     if (response.stop_reason === 'tool_use') {
       const toolResponse = handleToolUses(response.content)
       logger.debug('Tool response', toolResponse)
 
-      const finalResponse = await callClaude([
+      const finalResponse = await callClaude(systemPrompt,
+        [
          ...messages,
          {
            role: 'assistant',
@@ -53,8 +51,7 @@ async function main() {
          },
          toolResponse
         ],
-        tools,
-        systemPrompt
+        tools
       )
       logger.debug('Final response', finalResponse);
     }

@@ -1,10 +1,12 @@
 import { ANTHROPIC_VERSION, ANTHROPIC_API_KEY, model } from './consts.js';
 import { getLogger } from "./logger.js";
+import {systemPrompt} from "./prompts/system.js";
 
 let logger = null;
 
-export async function callClaude(messages, tools = [], systemPrompt) {
+export async function callClaude(systemPrompt, messages, tools = [] ) {
   logger = getLogger();
+  logger.debug('callClaude() -> request', {systemPrompt, messages, tools});
 
   const headers = {
     'Content-Type': 'application/json',
@@ -33,5 +35,6 @@ export async function callClaude(messages, tools = [], systemPrompt) {
     throw new Error(`API call failed: ${response.status} ${response.statusText}`)
   }
 
+  logger.debug('callClaude() <- response', {response: responseData});
   return responseData
 }
