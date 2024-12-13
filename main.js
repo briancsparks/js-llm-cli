@@ -5,12 +5,18 @@ import { logJson } from './src/utils.js'
 import { handleToolUses } from './src/tools/call.js';
 import myTools from './src/tools/index.js';
 import { loadMcpServers, closeClient } from './src/mcp/index.js';
+import { initLogger } from "./src/logger.js";
 
 import { ANTHROPIC_API_KEY } from './src/consts.js';
 
 if (!ANTHROPIC_API_KEY) {
   throw new Error('ANTHROPIC_API_KEY is required - set in environment or .env file')
 }
+
+const logger = initLogger({
+  minLevel: "DEBUG",
+  prettyPrint: true
+});
 
 const tools = {
   ...myTools,
@@ -19,19 +25,20 @@ const tools = {
 
 // main!
 async function main() {
+
   try {
     const messages = [{
       role: 'user',
       content: 'What time is it on the server?'
     }]
 
-    logJson('Chat', {system:systemPrompt, messages, tools});
+    logger.debug('Chat', {system:systemPrompt, messages, tools});
     const response = await callClaude(messages, tools, systemPrompt)
-    logJson('Claude response', response.content);
+    logger.debug('Claude response', response.content);
 
     if (response.stop_reason === 'tool_use') {
       const toolResponse = handleToolUses(response.content)
-      logJson('Tool response', toolResponse)
+      logger.debug('Tool response', toolResponse)
 
       const finalResponse = await callClaude([
          ...messages,
@@ -44,13 +51,13 @@ async function main() {
         tools,
         systemPrompt
       )
-      logJson('Final response', finalResponse.content);
+      logger.debug('Final response', finalResponse.content);
     }
   } catch (error) {
-    console.error('Error:', error)
+    logger.error('Error:', error)
   }
 
-  console.log('Done!');
+  logger.info('Done!');
   await closeClient();
 }
 

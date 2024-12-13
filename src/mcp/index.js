@@ -2,11 +2,13 @@
 import { Client } from 'npm:@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from 'npm:@modelcontextprotocol/sdk/client/stdio.js';
 import {logJson} from "../utils.js";
-// import { ListResourcesResultSchema, ListToolsResultSchema } from "npm:@modelcontextprotocol/sdk/types.js";
+import { getLogger } from "../logger.js";
 
 let client = null;    // Must close when done
+let logger = null;
 
 export async function closeClient() {
+  logger = getLogger();
   if (client) {
     await client.close();
     client = null;
@@ -14,6 +16,8 @@ export async function closeClient() {
 }
 
 export async function loadMcpServers() {
+  logger = getLogger();
+
   let command = 'npx';
   let args = ["-y", "@modelcontextprotocol/server-filesystem", "/Users/brian/dev/claude-scratch"];
 
@@ -47,10 +51,10 @@ export async function loadMcpServers() {
   const caps = client.getServerCapabilities();
   const version = client.getServerVersion();
 
-  logJson('caps and version:', { caps, version});
+  logger.info('caps and version:', { caps, version});
   const toolsResponse = await client.listTools()
 
-  logJson('Raw tools response:', toolsResponse);
+  logger.info('Raw tools response:', toolsResponse);
 
   let tools = {};
   for (const tool of toolsResponse.tools) {
