@@ -3,8 +3,8 @@
 ## Now
 
 - MCP tool calling works for filesystem
-- tool calling
-  - call tool, report back to LLM
+- ~~tool calling~~
+  - ~~call tool, report back to LLM~~
 - create C++ project prompt
 
 ## Misc
@@ -16,7 +16,7 @@
     - must build tools part of request
     - set the 'force this tool' entry on request, maybe
 - Use this repo to call tool.
-  - parse and realize toolcall is needed.
+  - parse and realize tool-call is needed.
   - call through mcp
   - send result back to LLM
 - Use cpp-project-creator
