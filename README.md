@@ -8,7 +8,7 @@ A simple Deno project that interacts with Claude 3.5 Sonnet API, demonstrating s
 2. Add your Anthropic API key to `.env`
 3. Run the project:
    ```bash
-   deno run --allow-net --allow-env --allow-read main.js
+   deno run --allow-net --allow-env --allow-read --allow-run main.js
    ```
 
 ## Project Structure

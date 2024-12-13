@@ -1,4 +1,7 @@
 // logger.js
+// import { colors } from "https://deno.land/x/cliffy/ansi/colors.ts";
+import * as colors from "https://deno.land/std@0.218.0/fmt/colors.ts";
+
 const COLORS = {
   reset: "\x1b[0m",
   white: "\x1b[37m",
@@ -102,6 +105,42 @@ export function getLogger() {
     throw new Error("Logger not initialized. Call initLogger() first");
   }
   return globalLogger;
+}
+
+export function closeLogger() {
+  globalLogger = null;
+}
+
+let user = 'yellow';
+let assistant = 'green';
+let systemPrompt = assistant;
+
+const speakers = {
+  user: colors[user],
+  assistant: colors[assistant],
+  systemPrompt: colors[systemPrompt]
+};
+
+export function bark(message) {
+  let content = message.content;
+  const key0  = Object.keys(message)[0];
+  let role = message.role;
+
+  let colorizer = colors.white;
+  if (message.role) {
+    colorizer = speakers[message.role];
+  } else if (key0 === 'systemPrompt') {
+    colorizer = speakers.systemPrompt;
+    content = message.systemPrompt;
+    role = 'system';
+  }
+
+  role    = role    || 'NOBODY';
+  content = content || 'NOCONTENT';
+
+  console.log('\n------------------------------');
+  console.log(colorizer(`${role}:`));
+  console.log(colorizer(`${content}`));
 }
 
 export { Logger, LEVELS };

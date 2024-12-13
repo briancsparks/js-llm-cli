@@ -2,6 +2,7 @@
 
 ## Now
 
+- Clean up logging
 - MCP tool calling works for filesystem
 - ~~tool calling~~
   - ~~call tool, report back to LLM~~

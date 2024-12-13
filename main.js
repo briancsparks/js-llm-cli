@@ -4,7 +4,7 @@ import { callClaude } from './src/claudeClient.js'
 import { handleToolUses } from './src/tools/call.js';
 import myTools from './src/tools/index.js';
 import { loadMcpServers, closeClient } from './src/mcp/index.js';
-import { initLogger } from "./src/logger.js";
+import { initLogger, bark } from "./src/logger.js";
 
 import { ANTHROPIC_API_KEY } from './src/consts.js';
 
@@ -29,11 +29,17 @@ async function main() {
     const messages = [{
       role: 'user',
       content: 'What time is it on the server?'
-    }]
+    }];
 
-    logger.debug('Chat', {system:systemPrompt, messages, tools});
+    bark({systemPrompt});
+    for (const message of messages) {
+      bark(message);
+    }
+
+    // logger.debug('Chat', {system:systemPrompt, messages, tools});
     const response = await callClaude(messages, tools, systemPrompt)
-    logger.debug('Claude response', response.content);
+    // logger.debug('Claude response', response.content);
+    logger.debug('Claude response', response);
 
     if (response.stop_reason === 'tool_use') {
       const toolResponse = handleToolUses(response.content)
@@ -50,7 +56,7 @@ async function main() {
         tools,
         systemPrompt
       )
-      logger.debug('Final response', finalResponse.content);
+      logger.debug('Final response', finalResponse);
     }
   } catch (error) {
     logger.error('Error:', error)

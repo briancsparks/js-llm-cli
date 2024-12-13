@@ -45,19 +45,23 @@ export async function loadMcpServers() {
 
   // Connect and initialize
   await client.connect(transport);
-  console.log('Connected to server');
 
   const caps = client.getServerCapabilities();
   const version = client.getServerVersion();
-  logger.info('caps and version:', { caps, version});
+  logger.info(`Connected to server: ${version.name} ${version.version}`);
+  // logger.info('caps and version:', { caps, version});
 
-  const toolsResponse = await client.listTools()
-  logger.info('Raw tools response:', toolsResponse);
+  const toolsResponse = await client.listTools();
+  // logger.info('Raw tools response:', toolsResponse);
 
+  let toolNames = [];
   let tools = {};
   for (const tool of toolsResponse.tools) {
+    toolNames.push(tool.name);
     const {inputSchema, ...rest} = tool;
     tools[tool.name] = {...rest, input_schema: inputSchema};
   }
+  // logger.info('Loaded tools:', toolNames);
+  logger.info(`Loaded tools: ${toolNames.join(', ')}`);
   return tools;
 }
