@@ -8,6 +8,34 @@
   - ~~call tool, report back to LLM~~
 - create C++ project prompt
 
+## Z Plan
+
+The main loop:
+- At the top of the loop is where the user enters their prompt(s).
+  - They can enter several - mixed text and image, could be multiple texts inside one object.
+  - A loop at the top of the main loop to get the user's input.
+- When the user is done entering their prompt, send request to the LLM
+  - And get the response from the LLM
+    - Streaming, eventually.
+  - Parse the response:
+    - Assistant's text-based response (chat)
+      - Might contain any manner of markdown
+        - Code blocks are the notable things you might want to parse out.
+      - Done with the main, outer loop - back to the top for the user's next entry in the chat.
+    - Might contain tool use request(s)
+      - `{type: "tool_use", name: "fnName", input: {}, id: "toolu_abc"}`
+      - Run the tool, get its response
+      - Parse the tool's result and add it to messages
+        - `{type: "tool_result", tool_use_id: "toolu_abc", content: "<the tool's result>"}`
+        - `role: "user"`
+      - Potentially parse and run more tools
+      - When all tool calls have run (and all their results are put into messages)...
+        - Go back to the top of the loop, but skip asking the user for input
+        - Send messages (which have the tool call responses at the end) to LLM
+  - When ending:
+    - `{stop_reason: "end_turn", type: "message", usage: {input_tokens: 999, output_tokens: 42}}`
+- Don't re-add the system prompt; the tools, etc. on subsequent iterations
+
 ## Misc
 
 - Convert js-mcp-client to Deno, or cvt when porting here
