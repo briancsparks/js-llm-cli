@@ -38,20 +38,20 @@ class Logger {
           sorted: true
         });
       }
-      // Fallback to Node's util.inspect if available
-      if (typeof require !== "undefined") {
-        try {
-          const util = require("util");
-          return "\n" + util.inspect(data, {
-            colors: this.enableColors,
-            depth: null,
-            sorted: true
-          });
-        } catch {
-          // Fallback to basic JSON formatting if neither is available
-          return "\n" + JSON.stringify(data, null, 2);
-        }
-      }
+      // // Fallback to Node's util.inspect if available
+      // if (typeof require !== "undefined") {
+      //   try {
+      //     const util = require("util");
+      //     return "\n" + util.inspect(data, {
+      //       colors: this.enableColors,
+      //       depth: null,
+      //       sorted: true
+      //     });
+      //   } catch {
+      //     // Fallback to basic JSON formatting if neither is available
+      //     return "\n" + JSON.stringify(data, null, 2);
+      //   }
+      // }
     }
     return "\n" + JSON.stringify(data);
   }
@@ -111,30 +111,37 @@ export function closeLogger() {
   globalLogger = null;
 }
 
-let user = 'yellow';
-let assistant = 'green';
-let systemPrompt = assistant;
+let userColor = 'yellow';
+let assistantColor = 'green';
+let systemPromptColor = assistantColor;
+let toolColor = 'blue';
 
 const speakers = {
-  user: colors[user],
-  assistant: colors[assistant],
-  systemPrompt: colors[systemPrompt]
+  user: colors[userColor],
+  assistant: colors[assistantColor],
+  systemPrompt: colors[systemPromptColor],
+  toolPrompt: colors[toolColor]
 };
 
 export function bark(arg0) {
-  const key0  = Object.keys(arg0)[0];
+  const key0  = (Object.keys(arg0) || [])[0];
 
   // TODO: Implement these
   if (key0 === 'toolResponse') {
+    const speak = speakers['toolPrompt'] || colors.white;
+    console.log('\n------------------------------');
+    console.log(speak(`tool:`));
+    console.log(speak(`${arg0.toolResponse.content[0].content}`));
+
     if (globalLogger) {
       globalLogger.debug('Tool response', arg0)
     }
     return;
   }
 
-  let content   = arg0.content;
-  let role      = arg0.role;
-  let colorizer = speakers[arg0.role];
+  let content   = arg0.content          || (arg0[key0] || {}).content;
+  let role      = arg0.role             || (arg0[key0] || {}).role;
+  let colorizer = speakers[role];
 
   // let colorizer = colors.white;
   // if (arg0.role) {
@@ -147,13 +154,28 @@ export function bark(arg0) {
     role = 'system';
   }
 
+  if (Array.isArray(content)) {
+    for (const item of content) {
+      bark({role, content: item.text || item.name});
+    }
+    return;
+  }
+
+  const canBark = (!!content) && (typeof content === 'string' || content instanceof String);
+
   role      = role      || 'NOBODY';
   content   = content   || 'NOCONTENT';
   colorizer = colorizer || colors.white;
 
+  if (!canBark) {
+    globalLogger.info('\n------------------------------ MEOW!\n', arg0)
+    return;
+  }
+
   console.log('\n------------------------------');
   console.log(colorizer(`${role}:`));
   console.log(colorizer(`${content}`));
+  globalLogger.debug('meow', {role, content});
 }
 
 export { Logger, LEVELS };

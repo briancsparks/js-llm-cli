@@ -1,0 +1,7 @@
+{
+  "name": "js-llm",
+  "version": "0.9.0",
+  "description": "CLI to invoke LLM",
+  "author": "Brian C Sparks",
+  "license": "MIT"
+}

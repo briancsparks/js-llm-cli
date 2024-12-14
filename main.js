@@ -13,7 +13,7 @@ if (!ANTHROPIC_API_KEY) {
 }
 
 const logger = initLogger({
-  minLevel: "DEBUG",
+  minLevel: "INFO",
   prettyPrint: true
 });
 
@@ -46,39 +46,22 @@ async function main() {
       }
 
       for (let j = 0; j < 5; j++) {
-        const response = await callClaude(systemPrompt, messages, tools);
-        messages = [...messages, {role: 'assistant', content: response.content}];
+        const llmResponse = await callClaude(systemPrompt, messages, tools);
+        messages = [...messages, {role: 'assistant', content: llmResponse.content}];
+        bark({llmResponse});
 
         // TODO: Handle tools - call for each toolrequest, returns list of tool responses
-        const toolResponse = handleToolUses(response);
+        const toolResponse = handleToolUses(llmResponse);
         if (toolResponse) {
           bark({toolResponse});
           messages = [...messages, toolResponse];   // TODO: should be ...toolResponse?
+          continue;
         }
 
-        // if (response.stop_reason === 'tool_use') {
-        //   const toolResponse = handleToolUses(response.content);
-        //   logger.debug('Tool response', toolResponse)
-        //
-        //   const finalResponse = await callClaude(systemPrompt,
-        //     [
-        //       ...messages,
-        //       {
-        //         role: 'assistant',
-        //         content: response.content  // Include the complete content array
-        //       },
-        //       toolResponse
-        //     ],
-        //     tools
-        //   )
-        //   logger.debug('Final response', finalResponse);
-        // }
+        // No need to go back around
+        break;
       }
     }
-
-
-
-
   } catch (error) {
     logger.error('Error:', error)
   }

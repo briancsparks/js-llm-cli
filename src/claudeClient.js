@@ -6,7 +6,7 @@ let logger = null;
 
 export async function callClaude(systemPrompt, messages, tools = [] ) {
   logger = getLogger();
-  logger.debug('callClaude() -> request', {systemPrompt, messages, tools});
+  logger.debug('callClaude() -> request', {systemPrompt, tools, messages});
 
   const headers = {
     'Content-Type': 'application/json',

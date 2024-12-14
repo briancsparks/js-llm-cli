@@ -17,6 +17,8 @@ export async function closeClient() {
 // TODO: Each that is returned from this needs to have a run() function
 export async function loadMcpServers() {
   logger = getLogger();
+  const config = JSON.parse(await Deno.readTextFile("./deno.json"));
+  const { name, version /*, description*/ } = config;
 
   let command = 'npx';
   let args = ["-y", "@modelcontextprotocol/server-filesystem", "/Users/brian/dev/claude-scratch"];
@@ -32,25 +34,15 @@ export async function loadMcpServers() {
   });
 
   // Initialize client
-  client = new Client(
-    {
-      name: 'js-llm',
-      version: '1.0.0'
-    },
-    {
-      capabilities: {
-        tools: {}
-      }
-    }
-  );
+  client = new Client({name, version}, {capabilities: {tools: {}}});
 
   // Connect and initialize
   await client.connect(transport);
 
-  const caps = client.getServerCapabilities();
-  const version = client.getServerVersion();
-  logger.info(`Connected to server: ${version.name} ${version.version}`);
-  // logger.info('caps and version:', { caps, version});
+  const serverVersion = client.getServerVersion();
+  logger.info(`Connected to server: ${serverVersion.name} ${serverVersion.version}`);
+  // const serverCapabilities = client.getServerCapabilities();
+  // logger.info('caps and version:', { serverCapabilities, serverVersion});
 
   const toolsResponse = await client.listTools();
   // logger.info('Raw tools response:', toolsResponse);
@@ -74,7 +66,7 @@ export async function loadMcpServers() {
     toolNames.push(tool.name);
     tools[tool.name] = tool;
   }
-  // logger.info('Loaded tools:', toolNames);
+
   logger.info(`Loaded tools: ${toolNames.join(', ')}`);
   return tools;
 }
