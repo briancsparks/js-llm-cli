@@ -1,5 +1,7 @@
 // src/tools/index.js
 
+// TODO: Load the MCP tools, too
+
 const getCurrentTime = {
   name: 'getCurrentTime',
   description: 'Get the current server time',

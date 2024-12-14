@@ -14,6 +14,7 @@ export async function closeClient() {
   }
 }
 
+// TODO: Each that is returned from this needs to have a run() function
 export async function loadMcpServers() {
   logger = getLogger();
 
@@ -56,10 +57,22 @@ export async function loadMcpServers() {
 
   let toolNames = [];
   let tools = {};
-  for (const tool of toolsResponse.tools) {
+  for (const mcpTool of toolsResponse.tools) {
+    // Rename schema
+    const {inputSchema, ...rest} = mcpTool;
+    let tool = {...rest, input_schema: inputSchema};    // TODO: || <some-default-schema?>
+
+    // TODO: `tool` needs a `run()` function that takes args
+    tool.run = async (args) => {
+      // TODO: use `client` to invoke tool
+      // const toolResponse = await client.
+      // log it?
+      // return toolResponse;
+    }
+
+    // Put the tool in the list
     toolNames.push(tool.name);
-    const {inputSchema, ...rest} = tool;
-    tools[tool.name] = {...rest, input_schema: inputSchema};
+    tools[tool.name] = tool;
   }
   // logger.info('Loaded tools:', toolNames);
   logger.info(`Loaded tools: ${toolNames.join(', ')}`);

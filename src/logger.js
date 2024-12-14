@@ -121,22 +121,35 @@ const speakers = {
   systemPrompt: colors[systemPrompt]
 };
 
-export function bark(message) {
-  let content = message.content;
-  const key0  = Object.keys(message)[0];
-  let role = message.role;
+export function bark(arg0) {
+  const key0  = Object.keys(arg0)[0];
 
-  let colorizer = colors.white;
-  if (message.role) {
-    colorizer = speakers[message.role];
-  } else if (key0 === 'systemPrompt') {
+  // TODO: Implement these
+  if (key0 === 'toolResponse') {
+    if (globalLogger) {
+      globalLogger.debug('Tool response', arg0)
+    }
+    return;
+  }
+
+  let content   = arg0.content;
+  let role      = arg0.role;
+  let colorizer = speakers[arg0.role];
+
+  // let colorizer = colors.white;
+  // if (arg0.role) {
+  //   colorizer = speakers[arg0.role];
+  // }
+
+  if (key0 === 'systemPrompt') {
     colorizer = speakers.systemPrompt;
-    content = message.systemPrompt;
+    content = arg0.systemPrompt;
     role = 'system';
   }
 
-  role    = role    || 'NOBODY';
-  content = content || 'NOCONTENT';
+  role      = role      || 'NOBODY';
+  content   = content   || 'NOCONTENT';
+  colorizer = colorizer || colors.white;
 
   console.log('\n------------------------------');
   console.log(colorizer(`${role}:`));

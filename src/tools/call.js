@@ -1,7 +1,12 @@
 import tools from "./index.js";
 
 
-export function handleToolUses(content) {
+export function handleToolUses(response) {
+  if (response.stop_reason !== 'tool_use') {
+    return null;
+  }
+
+  const content = response.content;
   const toolResults = []
 
   for (const item of content) {
@@ -11,6 +16,8 @@ export function handleToolUses(content) {
         throw new Error(`Unknown tool: ${item.name}`)
       }
 
+      // TODO: `item` is one of the invocation requests. It must have the args. Compare them against `tool.input_schema`
+      // TODO: Pass the item's args to `tool.run()`
       const toolResult = tool.run()
       toolResults.push({
         type: 'tool_result',

@@ -4,6 +4,11 @@
 
 - Clean up logging
 - MCP tool calling works for filesystem
+  - ~~Launch server, get tools list, remember them.~~
+  - Detect tool use
+    - Call tool
+    - Tell response to LLM
+    - Re-invoke LLM
 - ~~tool calling~~
   - ~~call tool, report back to LLM~~
 - create C++ project prompt
