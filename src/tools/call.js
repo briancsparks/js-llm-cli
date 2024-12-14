@@ -1,7 +1,16 @@
-import tools from "./index.js";
+// import tools from "./index.js";
+import {loadTools as loadToolsFromTools} from './index.js';
 
+let tools = null;
 
-export function handleToolUses(response) {
+export async function loadTools() {
+  return tools || (tools = await loadToolsFromTools());
+}
+
+export async function handleToolUses(response) {
+  // const tools = await loadToolsFromTools();
+  tools || (tools = await loadToolsFromTools());
+
   if (response.stop_reason !== 'tool_use') {
     return null;
   }

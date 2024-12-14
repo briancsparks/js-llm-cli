@@ -1,8 +1,8 @@
 
 import { systemPrompt } from './src/prompts/system.js'
 import { callClaude } from './src/claudeClient.js'
-import { handleToolUses } from './src/tools/call.js';
-import myTools from './src/tools/index.js';
+import {handleToolUses, loadTools} from './src/tools/call.js';
+// import loadTools from './src/tools/index.js';
 import { loadMcpServers, closeClient } from './src/mcp/index.js';
 import { initLogger, bark } from "./src/logger.js";
 
@@ -17,16 +17,19 @@ const logger = initLogger({
   prettyPrint: true
 });
 
-// TODO: MCP servers will be loaded with tools, and maanaged there
-const tools = {
-  ...myTools,
-  ...await loadMcpServers()
-};
+// // TODO: MCP servers will be loaded with tools, and maanaged there
+// const tools = {
+//   ...myTools,
+//   ...await loadMcpServers()
+// };
 
 // main!
 async function main() {
 
   // TODO: Load system prompt
+
+  // Load tools
+  const tools = await loadTools();
 
   try {
     // For now, just hard-code one prompt from the user.
@@ -51,7 +54,7 @@ async function main() {
         bark({llmResponse});
 
         // TODO: Handle tools - call for each toolrequest, returns list of tool responses
-        const toolResponse = handleToolUses(llmResponse);
+        const toolResponse = await handleToolUses(llmResponse);
         if (toolResponse) {
           bark({toolResponse});
           messages = [...messages, toolResponse];   // TODO: should be ...toolResponse?
