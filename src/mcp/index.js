@@ -58,6 +58,7 @@ export async function loadMcpServers() {
     tool.run = async (args) => {
       // TODO: use `client` to invoke tool
 
+      logger.info(`Running tool: ${tool.name}`, {name: tool.name, ...args});
       const toolResponse = await client.callTool({name: tool.name, ...args}/*, args*/);
       // const toolResponse = {};
       // log it?

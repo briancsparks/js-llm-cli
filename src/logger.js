@@ -1,6 +1,7 @@
 // logger.js
 // import { colors } from "https://deno.land/x/cliffy/ansi/colors.ts";
 import * as colors from "https://deno.land/std@0.218.0/fmt/colors.ts";
+import { logUnknownJson } from "./log-unknown-json.js";
 
 const COLORS = {
   reset: "\x1b[0m",
@@ -112,31 +113,31 @@ export function closeLogger() {
 }
 
 
-async function logUnknownJson(json, context = '') {
-  const tmpDir = await Deno.makeTempDir();
-  const logPath = `${tmpDir}/misunderstood.jsonl`;
-
-  // Get call stack to determine where this was called from
-  const stack = new Error().stack;
-  const callerLine = stack.split('\n')[2]; // Skip Error and current function
-
-  const logEntry = {
-    timestamp: new Date().toISOString(),
-    json,
-    caller: callerLine.trim(),
-    context
-  };
-
-  const jsonString = JSON.stringify(logEntry, null, 0) + '\n';
-
-  await Deno.writeFile(
-    logPath,
-    new TextEncoder().encode(jsonString),
-    { append: true, create: true }
-  );
-
-  console.warn(`Unknown JSON case logged to: ${logPath}`);
-}
+// async function logUnknownJson(json, context = '') {
+//   const tmpDir = await Deno.makeTempDir();
+//   const logPath = `${tmpDir}/misunderstood.jsonl`;
+//
+//   // Get call stack to determine where this was called from
+//   const stack = new Error().stack;
+//   const callerLine = stack.split('\n')[2]; // Skip Error and current function
+//
+//   const logEntry = {
+//     timestamp: new Date().toISOString(),
+//     json,
+//     caller: callerLine.trim(),
+//     context
+//   };
+//
+//   const jsonString = JSON.stringify(logEntry, null, 0) + '\n';
+//
+//   await Deno.writeFile(
+//     logPath,
+//     new TextEncoder().encode(jsonString),
+//     { append: true, create: true }
+//   );
+//
+//   console.warn(`Unknown JSON case logged to: ${logPath}`);
+// }
 
 
 
@@ -160,27 +161,56 @@ export async function bark(arg0) {
   const role = arg0.role || val0.role;
 
   const barkIt = async function(args) {
+    let argsK = Object.keys(args);
+    let argsC = argsK.length;
+
     let handled = false;
     let errMessage = "";
     let subRole = null;
 
-    if (argc === 1) {
+    if (argsC === 1) {
       errMessage = `While handling key: ${key0}`;     /* default */
 
       subRole = key0;
       if (key0 === 'toolResponse') {
-        errMessage = `While handling toolResponse`;
+        // errMessage = `While handling toolResponse`;
+        return barkIt(val0);
 
       } else if (key0 === 'llmResponse') {
-        errMessage = `While handling llmResponse`;
+        // errMessage = `While handling llmResponse`;
+        return barkIt(val0);
 
       } else if (key0 === 'message') {
-        errMessage = `While handling message`;
+        // errMessage = `While handling message`;
+        return barkIt(val0);
 
       } else if (key0 === 'systemPrompt') {
         subRole = 'systemPrompt';
         return doTheBarking(arg0.systemPrompt);
 
+      } else {
+        errMessage = `While handling unknown key: ${key0}`;
+      }
+    } else {
+      // argc > 1; key0 is still the cmd
+      if (key0 === 'message') {
+        if (args.role && args.content) {
+          return doTheBarking(args.content);
+        }
+
+      } else if (key0 === 'llmResponse' || key0 === 'toolResponse') {
+        if (args.role && Array.isArray(args.content)) {
+          let success = true;
+          let i = 0;
+          for (const item of args.content) {
+            success = await barkContent(item, i, args /*, args.role*/) && success;
+            i += 1;
+          }
+          if (success) {
+            return success;
+          }
+        }
+        errMessage = `While handling key: ${key0}, no role`;
       } else {
         errMessage = `While handling unknown key: ${key0}`;
       }
@@ -192,18 +222,41 @@ export async function bark(arg0) {
     }
     return null;
 
+    async function barkContent(content, count, parent, theRole) {
+
+      if (content.type === 'text' && content.text) {
+        return doTheBarking(content.text, theRole, count);
+      }
+      if (content.type === 'tool_use' && content.name) {
+        return doTheBarking(content.name, content.type, count);
+      }
+      if (content.type === 'tool_result' && Array.isArray(content.content)) {
+        let success = true;
+        let i = 0;
+        for (const item of content.content) {
+          success = await barkContent(item, i, args, content.type) && success;
+          i += 1;
+        }
+        if (success) {
+          return success;
+        }
+      }
+      return false;
+    }
+
     function getColorizer() {
       return speakers[subRole] || speakers[role] || colors.white;
     }
 
-    function doTheBarking(text, count = 0) {
+    function doTheBarking(text, role_ = null, count = 0) {
       const speak = getColorizer();
       console.log('\n------------------------------');
-      console.log(speak(`role: ${role || subRole || 'NOBODY'} (${count})`));
+      console.log(speak(`role: ${role_ || subRole || role || 'NOBODY'} (${count})`));
       console.log(speak(text));
+      return true;
     }
   }
-  return barkIt(arg0);
+  return await barkIt(arg0);
 }
 
 export function bark0(arg0) {
