@@ -2,8 +2,7 @@
 import { systemPrompt } from './src/prompts/system.js'
 import { callClaude } from './src/claudeClient.js'
 import {handleToolUses, loadTools} from './src/tools/call.js';
-// import loadTools from './src/tools/index.js';
-import { loadMcpServers, closeClient } from './src/mcp/index.js';
+import { closeClient } from './src/mcp/index.js';
 import { initLogger, bark } from "./src/logger.js";
 
 import { ANTHROPIC_API_KEY } from './src/consts.js';
@@ -16,12 +15,6 @@ const logger = initLogger({
   minLevel: "INFO",
   prettyPrint: true
 });
-
-// // TODO: MCP servers will be loaded with tools, and maanaged there
-// const tools = {
-//   ...myTools,
-//   ...await loadMcpServers()
-// };
 
 // main!
 async function main() {
@@ -50,15 +43,17 @@ async function main() {
       }
 
       for (let j = 0; j < 50; j++) {
+        // TODO: Handle error - they may be retryable, like server overload.
         const llmResponse = await callClaude(systemPrompt, messages, tools);
         messages = [...messages, {role: 'assistant', content: llmResponse.content}];
         await bark({llmResponse});
 
-        // TODO: Handle tools - call for each toolrequest, returns list of tool responses
+        // Let the tools manager look at the response and handle tool requests. handleToolUses() will determine if tool calls are needed.
         const toolResponse = await handleToolUses(llmResponse);
         if (toolResponse) {
+          // Yes, tool calls were made. Stuff the responses into the message list to tell the LLM what happened.
           await bark({toolResponse});
-          messages = [...messages, toolResponse];   // TODO: should be ...toolResponse?
+          messages = [...messages, toolResponse];
           continue;
         }
 

@@ -1,6 +1,5 @@
 import { ANTHROPIC_VERSION, ANTHROPIC_API_KEY, model } from './consts.js';
 import { getLogger } from "./logger.js";
-import {systemPrompt} from "./prompts/system.js";
 
 let logger = null;
 
@@ -31,10 +30,26 @@ export async function callClaude(systemPrompt, messages, tools = [] ) {
   const responseData = await response.json();
 
   if (!response.ok) {
-    logger.error('Error Response', responseData)
-    throw new Error(`API call failed: ${response.status} ${response.statusText}`)
+    // TODO: Determine the error. may be retryable. prompt user to try again or abort.
+    logger.error('Error Response', {response, responseData});
+    throw new Error(`API call failed: ${response.status} ${response.statusText}`);
   }
 
   logger.debug('callClaude() <- response', {response: responseData});
-  return responseData
+  return responseData;
 }
+
+/*
+ Errors i have seen from Claude:
+
+  responseData: {
+    error: { message: "Overloaded", type: "overloaded_error" },
+    type: "error"
+  },
+  response: {
+    ok: false,
+    status: 529,
+    statusText: a-stack-trace
+  }
+
+ */

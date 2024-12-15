@@ -14,7 +14,6 @@ export async function closeClient() {
   }
 }
 
-// TODO: Each that is returned from this needs to have a run() function
 export async function loadMcpServers() {
   logger = getLogger();
   const config = JSON.parse(await Deno.readTextFile("./deno.json"));
@@ -24,7 +23,6 @@ export async function loadMcpServers() {
   let args = ["-y", "@modelcontextprotocol/server-filesystem", "/Users/brian/dev/claude-scratch/tmp"];
 
   console.log(`Launching server with: ${command} ${args.join(' ')}`);
-
 
   // Create transport
   const transport = new StdioClientTransport({
@@ -41,27 +39,21 @@ export async function loadMcpServers() {
 
   const serverVersion = client.getServerVersion();
   logger.info(`Connected to server: ${serverVersion.name} ${serverVersion.version}`);
-  // const serverCapabilities = client.getServerCapabilities();
-  // logger.info('caps and version:', { serverCapabilities, serverVersion});
 
   const toolsResponse = await client.listTools();
-  // logger.info('Raw tools response:', toolsResponse);
 
   let toolNames = [];
   let tools = {};
   for (const mcpTool of toolsResponse.tools) {
     // Rename schema
     const {inputSchema, ...rest} = mcpTool;
-    let tool = {...rest, input_schema: inputSchema};    // TODO: || <some-default-schema?>
+    let tool = {...rest, input_schema: inputSchema};
 
-    // TODO: `tool` needs a `run()` function that takes args
     tool.run = async (args) => {
-      // TODO: use `client` to invoke tool
+      const params = {name: tool.name, arguments: args};
+      const toolResponse = await client.callTool(params);
+      logger.debug(`Calling tool: ${tool.name}`, {input: params, toolResponse});
 
-      // logger.info(`Running tool: ${tool.name}`, {name: tool.name, arguments: args});
-      const toolResponse = await client.callTool({name: tool.name, arguments: args}/*, args*/);
-      // const toolResponse = {};
-      // log it?
       return toolResponse;
     }
 
@@ -71,6 +63,5 @@ export async function loadMcpServers() {
   }
 
   logger.info(`Loaded tools: ${toolNames.join(', ')}`);
-  // logger.info(`Loaded tools: ${toolNames.join(', ')}`, tools);
   return tools;
 }

@@ -1,5 +1,4 @@
 // logger.js
-// import { colors } from "https://deno.land/x/cliffy/ansi/colors.ts";
 import * as colors from "https://deno.land/std@0.218.0/fmt/colors.ts";
 import { logUnknownJson } from "./log-unknown-json.js";
 
@@ -39,20 +38,6 @@ class Logger {
           sorted: true
         });
       }
-      // // Fallback to Node's util.inspect if available
-      // if (typeof require !== "undefined") {
-      //   try {
-      //     const util = require("util");
-      //     return "\n" + util.inspect(data, {
-      //       colors: this.enableColors,
-      //       depth: null,
-      //       sorted: true
-      //     });
-      //   } catch {
-      //     // Fallback to basic JSON formatting if neither is available
-      //     return "\n" + JSON.stringify(data, null, 2);
-      //   }
-      // }
     }
     return "\n" + JSON.stringify(data);
   }
@@ -112,34 +97,7 @@ export function closeLogger() {
   globalLogger = null;
 }
 
-
-// async function logUnknownJson(json, context = '') {
-//   const tmpDir = await Deno.makeTempDir();
-//   const logPath = `${tmpDir}/misunderstood.jsonl`;
-//
-//   // Get call stack to determine where this was called from
-//   const stack = new Error().stack;
-//   const callerLine = stack.split('\n')[2]; // Skip Error and current function
-//
-//   const logEntry = {
-//     timestamp: new Date().toISOString(),
-//     json,
-//     caller: callerLine.trim(),
-//     context
-//   };
-//
-//   const jsonString = JSON.stringify(logEntry, null, 0) + '\n';
-//
-//   await Deno.writeFile(
-//     logPath,
-//     new TextEncoder().encode(jsonString),
-//     { append: true, create: true }
-//   );
-//
-//   console.warn(`Unknown JSON case logged to: ${logPath}`);
-// }
-
-
+// ==========================================================================
 
 let userColor = 'yellow';
 let assistantColor = 'green';
@@ -257,61 +215,6 @@ export async function bark(arg0) {
     }
   }
   return await barkIt(arg0);
-}
-
-export function bark0(arg0) {
-  const key0  = (Object.keys(arg0) || [])[0];
-
-  // TODO: Implement these
-  if (key0 === 'toolResponse') {
-    const speak = speakers['toolPrompt'] || colors.white;
-    console.log('\n------------------------------');
-    console.log(speak(`tool:`));
-    console.log(speak(`${arg0.toolResponse.content[0].content}`));
-
-    if (globalLogger) {
-      globalLogger.debug('Tool response', arg0)
-    }
-    return;
-  }
-
-  let content   = arg0.content          || (arg0[key0] || {}).content;
-  let role      = arg0.role             || (arg0[key0] || {}).role;
-  let colorizer = speakers[role];
-
-  // let colorizer = colors.white;
-  // if (arg0.role) {
-  //   colorizer = speakers[arg0.role];
-  // }
-
-  if (key0 === 'systemPrompt') {
-    colorizer = speakers.systemPrompt;
-    content = arg0.systemPrompt;
-    role = 'system';
-  }
-
-  if (Array.isArray(content)) {
-    for (const item of content) {
-      bark({role, content: item.text || item.name});
-    }
-    return;
-  }
-
-  const canBark = (!!content) && (typeof content === 'string' || content instanceof String);
-
-  role      = role      || 'NOBODY';
-  content   = content   || 'NOCONTENT';
-  colorizer = colorizer || colors.white;
-
-  if (!canBark) {
-    globalLogger.info('\n------------------------------ MEOW!\n', arg0)
-    return;
-  }
-
-  console.log('\n------------------------------');
-  console.log(colorizer(`${role}:`));
-  console.log(colorizer(`${content}`));
-  globalLogger.debug('meow', {role, content});
 }
 
 export { Logger, LEVELS, logUnknownJson };

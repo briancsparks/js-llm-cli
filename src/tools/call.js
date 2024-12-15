@@ -8,7 +8,6 @@ export async function loadTools() {
 }
 
 export async function handleToolUses(response) {
-  // const tools = await loadToolsFromTools();
   tools || (tools = await loadToolsFromTools());
 
   if (response.stop_reason !== 'tool_use') {
@@ -25,8 +24,6 @@ export async function handleToolUses(response) {
         throw new Error(`Unknown tool: ${item.name}`)
       }
 
-      // TODO: `item` is one of the invocation requests. It must have the args. Compare them against `tool.input_schema`
-      // TODO: Pass the item's args to `tool.run()`
       const toolResult = await tool.run(item.input);
       toolResults.push({
         type: 'tool_result',
@@ -43,5 +40,5 @@ export async function handleToolUses(response) {
     }
   }
 
-  return null
+  return null;
 }
