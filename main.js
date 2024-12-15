@@ -39,25 +39,25 @@ async function main() {
       content: 'Generate a C++ project skeleton for: vector-math'
     }];
 
-    bark({systemPrompt});
+    await bark({systemPrompt});
 
     let more = true;
     for (let i = 0; more && i < 1; i++) {
       // TODO: Prompt the user
 
       for (const message of messages) {
-        bark({message});
+        await bark({message});
       }
 
       for (let j = 0; j < 5; j++) {
         const llmResponse = await callClaude(systemPrompt, messages, tools);
         messages = [...messages, {role: 'assistant', content: llmResponse.content}];
-        bark({llmResponse});
+        await bark({llmResponse});
 
         // TODO: Handle tools - call for each toolrequest, returns list of tool responses
         const toolResponse = await handleToolUses(llmResponse);
         if (toolResponse) {
-          bark({toolResponse});
+          await bark({toolResponse});
           messages = [...messages, toolResponse];   // TODO: should be ...toolResponse?
           continue;
         }

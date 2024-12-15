@@ -111,19 +111,102 @@ export function closeLogger() {
   globalLogger = null;
 }
 
+
+async function logUnknownJson(json, context = '') {
+  const tmpDir = await Deno.makeTempDir();
+  const logPath = `${tmpDir}/misunderstood.jsonl`;
+
+  // Get call stack to determine where this was called from
+  const stack = new Error().stack;
+  const callerLine = stack.split('\n')[2]; // Skip Error and current function
+
+  const logEntry = {
+    timestamp: new Date().toISOString(),
+    json,
+    caller: callerLine.trim(),
+    context
+  };
+
+  const jsonString = JSON.stringify(logEntry, null, 0) + '\n';
+
+  await Deno.writeFile(
+    logPath,
+    new TextEncoder().encode(jsonString),
+    { append: true, create: true }
+  );
+
+  console.warn(`Unknown JSON case logged to: ${logPath}`);
+}
+
+
+
 let userColor = 'yellow';
 let assistantColor = 'green';
 let systemPromptColor = assistantColor;
-let toolColor = 'blue';
+let toolResponse = 'blue';
 
 const speakers = {
   user: colors[userColor],
   assistant: colors[assistantColor],
   systemPrompt: colors[systemPromptColor],
-  toolPrompt: colors[toolColor]
+  toolPrompt: colors[toolResponse]
 };
 
-export function bark(arg0) {
+export async function bark(arg0) {
+  const argk = Object.keys(arg0);
+  const argc = argk.length;
+  const key0 = argk[0];
+  const val0 = arg0[key0];
+  const role = arg0.role || val0.role;
+
+  const barkIt = async function(args) {
+    let handled = false;
+    let errMessage = "";
+    let subRole = null;
+
+    if (argc === 1) {
+      errMessage = `While handling key: ${key0}`;     /* default */
+
+      subRole = key0;
+      if (key0 === 'toolResponse') {
+        errMessage = `While handling toolResponse`;
+
+      } else if (key0 === 'llmResponse') {
+        errMessage = `While handling llmResponse`;
+
+      } else if (key0 === 'message') {
+        errMessage = `While handling message`;
+
+      } else if (key0 === 'systemPrompt') {
+        subRole = 'systemPrompt';
+        return doTheBarking(arg0.systemPrompt);
+
+      } else {
+        errMessage = `While handling unknown key: ${key0}`;
+      }
+    }
+
+
+    if (!handled) {
+      return await logUnknownJson(arg0, errMessage);
+    }
+    return null;
+
+    function getColorizer() {
+      return speakers[subRole] || speakers[role] || colors.white;
+    }
+
+    function doTheBarking(text, count = 0) {
+      const speak = getColorizer();
+      console.log('\n------------------------------');
+      console.log(speak(`role: ${role || subRole || 'NOBODY'} (${count})`));
+      console.log(speak(text));
+    }
+  }
+  return barkIt(arg0);
+}
+
+export function bark0(arg0) {
   const key0  = (Object.keys(arg0) || [])[0];
 
   // TODO: Implement these
@@ -178,4 +261,4 @@ export function bark(arg0) {
   globalLogger.debug('meow', {role, content});
 }
 
-export { Logger, LEVELS };
+export { Logger, LEVELS, logUnknownJson };
