@@ -4,6 +4,7 @@ import { callClaude } from './src/claudeClient.js'
 import {handleToolUses, loadTools} from './src/tools/call.js';
 import { closeClient } from './src/mcp/index.js';
 import { initLogger, bark } from "./src/logger.js";
+import { sleep } from "./src/utils.js";
 
 import { ANTHROPIC_API_KEY } from './src/consts.js';
 
@@ -44,9 +45,22 @@ async function main() {
 
       for (let j = 0; j < 50; j++) {
         // TODO: Handle error - they may be retryable, like server overload.
-        const llmResponse = await callClaude(systemPrompt, messages, tools);
+        let sleepTime = 500;
+        let llmResponse = null;
+        while (true) {
+          llmResponse = await callClaude(systemPrompt, messages, tools);
+          await bark({llmResponse});
+          if (llmResponse.type === 'error' && llmResponse.error) {
+            if (llmResponse.error.type === 'rate_limit_error') {
+              sleepTime *= 2;
+              await sleep(sleepTime);
+            }
+            continue;
+          }
+          break;
+        }
+
         messages = [...messages, {role: 'assistant', content: llmResponse.content}];
-        await bark({llmResponse});
 
         // Let the tools manager look at the response and handle tool requests. handleToolUses() will determine if tool calls are needed.
         const toolResponse = await handleToolUses(llmResponse);

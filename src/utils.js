@@ -9,3 +9,7 @@ export function logJson(label, obj) {
   }))
   console.log()
 }
+
+export function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
