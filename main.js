@@ -49,7 +49,7 @@ async function main() {
         await bark({message});
       }
 
-      for (let j = 0; j < 5; j++) {
+      for (let j = 0; j < 50; j++) {
         const llmResponse = await callClaude(systemPrompt, messages, tools);
         messages = [...messages, {role: 'assistant', content: llmResponse.content}];
         await bark({llmResponse});
