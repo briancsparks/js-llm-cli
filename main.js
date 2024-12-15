@@ -35,7 +35,8 @@ async function main() {
     // For now, just hard-code one prompt from the user.
     let messages = [{
       role: 'user',
-      content: 'What time is it on the server?'
+      // content: 'What time is it on the server?'
+      content: 'Generate a C++ project skeleton for: vector-math'
     }];
 
     bark({systemPrompt});

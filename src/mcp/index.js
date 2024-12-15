@@ -21,7 +21,7 @@ export async function loadMcpServers() {
   const { name, version /*, description*/ } = config;
 
   let command = 'npx';
-  let args = ["-y", "@modelcontextprotocol/server-filesystem", "/Users/brian/dev/claude-scratch"];
+  let args = ["-y", "@modelcontextprotocol/server-filesystem", "/Users/brian/dev/claude-scratch/tmp"];
 
   console.log(`Launching server with: ${command} ${args.join(' ')}`);
 
@@ -57,9 +57,11 @@ export async function loadMcpServers() {
     // TODO: `tool` needs a `run()` function that takes args
     tool.run = async (args) => {
       // TODO: use `client` to invoke tool
-      // const toolResponse = await client.
+
+      const toolResponse = await client.callTool({name: tool.name, ...args}/*, args*/);
+      // const toolResponse = {};
       // log it?
-      // return toolResponse;
+      return toolResponse;
     }
 
     // Put the tool in the list
@@ -68,5 +70,6 @@ export async function loadMcpServers() {
   }
 
   logger.info(`Loaded tools: ${toolNames.join(', ')}`);
+  // logger.info(`Loaded tools: ${toolNames.join(', ')}`, tools);
   return tools;
 }

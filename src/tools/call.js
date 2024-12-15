@@ -27,11 +27,11 @@ export async function handleToolUses(response) {
 
       // TODO: `item` is one of the invocation requests. It must have the args. Compare them against `tool.input_schema`
       // TODO: Pass the item's args to `tool.run()`
-      const toolResult = tool.run()
+      const toolResult = await tool.run(item.input);
       toolResults.push({
         type: 'tool_result',
         tool_use_id: item.id,
-        content: toolResult
+        content: toolResult.content
       })
     }
   }

@@ -11,7 +11,7 @@ const getCurrentTime = {
     properties: {},
     required: []
   },
-  run: () => {return new Date().toISOString()}
+  run: async () => {return new Date().toISOString()}
 }
 
 export default {
