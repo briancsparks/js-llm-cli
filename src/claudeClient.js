@@ -35,7 +35,7 @@ export async function callClaude(systemPrompt, messages, tools = [] ) {
     body: requestBody
   });
 
-  const responseData = await response.json();
+  const responseData = await response.json();     /* TODO: Rename to llmResponse */
 
   logger.info('tokens', {usage: responseData.usage});
   console.log(reportLimits(response));
@@ -46,7 +46,7 @@ export async function callClaude(systemPrompt, messages, tools = [] ) {
       logger.info(`Error: ${message}`, {retry_after, date, status});
       const retry = await Confirm.prompt("Retry?");
       if (retry) {
-        return responseData;
+        return responseData;      /* TODO return {response, responseData} */
       }
     }
 
@@ -56,7 +56,7 @@ export async function callClaude(systemPrompt, messages, tools = [] ) {
   }
 
   logger.debug('callClaude() <- response', {response: responseData});
-  return responseData;
+  return responseData;      /* TODO return {response, responseData} */
 }
 
 function reportLimits(response) {
