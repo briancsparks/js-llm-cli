@@ -98,7 +98,7 @@ function parseMarkdownStructure(markdown) {
   }
 }
 
-async function parseMarkdownFile(filePath) {
+export async function parseMarkdownFile(filePath) {
   const content = await Deno.readTextFile(filePath)
 
   const matches = content.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/)
@@ -123,29 +123,3 @@ async function parseMarkdownFile(filePath) {
   }
 }
 
-// Example usage
-const filePath = Deno.args[0]
-
-if (!filePath) {
-  console.error("Please provide a markdown file path")
-  Deno.exit(1)
-}
-
-try {
-  const result0 = await parseMarkdownFile(filePath)
-  const {rendered, content, ...result1} = result0
-  const result = {...result1, content: content.length}
-
-  console.log("\nRendered Markdown:")
-  console.log("=================")
-  console.log(rendered)
-  console.log("\nContent:")
-  console.log("================")
-  console.log(content)
-  console.log("\nParsed Structure:")
-  console.log("================")
-  logJson("Markdown Data", result)
-} catch (error) {
-  console.error("Error:", error.message)
-  Deno.exit(1)
-}
